@@ -76,9 +76,6 @@ def inicializar_logging(ruta_config, nombre_config, proceso):
 
         return logger
 
-    except ExcepcionLogging as el:
-        raise el
-
     except Exception as e:
         raise ExcepcionLogging(f"Error al configurar el logging: {str(e)}") from e
 
@@ -142,9 +139,6 @@ def _configurar_logger(proceso, nivel_archivo, nivel_consola, ruta_log, tamanyo_
         logger.addHandler(consola_handler)
 
         return logger
-
-    except ExcepcionLogging as el:
-        raise el
 
     except Exception as e:
         raise ExcepcionLogging(f"Error al configurar el logger para el proceso '{proceso}': {str(e)}") from e

@@ -1,5 +1,6 @@
 # scripts/subprocesos/scrapping_obtener_grupos_competiciones.py
 
+import os
 from .scrapping_base import ScrappingBase
 from utils import string_utils
 from utils.excepciones import ExcepcionScrapping, ExcepcionConfiguracion
@@ -60,8 +61,7 @@ class ObtenerGruposCompeticiones(ScrappingBase):
                 return []
 
         except Exception as e:
-            raise ExcepcionScrapping(f"Error al ejecutar el proceso de obtención de competiciones: {str(e)}") from e
-
+            raise ExcepcionScrapping(f"Error al ejecutar el proceso de obtención de competiciones") from e
 
     def _cargar_valores_configuracion(self):
 
@@ -75,14 +75,16 @@ class ObtenerGruposCompeticiones(ScrappingBase):
             ExcepcionScrapping: Si ocurre algún error al cargar las configuraciones.
         """
 
+        nombre_subproceso = os.path.splitext(os.path.basename(__file__))[0]
+
         try:
-            self.url_velogames = self.obtener_valor_config("scrapping_ogc", "url_velogames")
-            self.clase_h1_all_contests = self.obtener_valor_config("scrapping_ogc", "clase_h1_all_contests")
-            self.texto_all_contests = self.obtener_valor_config("scrapping_ogc", "texto_all_contests")
-            self.etiqueta_enlace_competiciones = self.obtener_valor_config("scrapping_ogc", "etiqueta_enlace_competiciones")
-            self.texto_eliminar_competiciones = self.obtener_valor_config("scrapping_ogc", "texto_eliminar_competiciones")
-            self.palabras_identificador_femenino = self.obtener_valor_config("scrapping_ogc", "palabras_identificador_femenino")
-            self.clases_enlace_competiciones = self.obtener_valor_config("scrapping_ogc", "clases_enlace_competiciones")
+            self.url_velogames = self.obtener_valor_config(nombre_subproceso, "url_velogames")
+            self.clase_h1_all_contests = self.obtener_valor_config(nombre_subproceso, "clase_h1_all_contests")
+            self.texto_all_contests = self.obtener_valor_config(nombre_subproceso, "texto_all_contests")
+            self.etiqueta_enlace_competiciones = self.obtener_valor_config(nombre_subproceso, "etiqueta_enlace_competiciones")
+            self.texto_eliminar_competiciones = self.obtener_valor_config(nombre_subproceso, "texto_eliminar_competiciones")
+            self.palabras_identificador_femenino = self.obtener_valor_config(nombre_subproceso, "palabras_identificador_femenino")
+            self.clases_enlace_competiciones = self.obtener_valor_config(nombre_subproceso, "clases_enlace_competiciones")
 
         except ExcepcionConfiguracion as ec:
             raise ExcepcionScrapping(f"Error al cargar valores de configuración: {str(ec)}") from ec

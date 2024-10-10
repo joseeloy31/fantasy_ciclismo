@@ -26,8 +26,9 @@ class ScrappingBase:
         """
 
         try:
-            self.logger = logger
             self.config = self.cargar_configuracion_competiciones(ruta_config, nombre_proceso)
+            self.logger = logger
+            self.nombre_proceso = nombre_proceso
 
         except ExcepcionLogging as el:
             raise ExcepcionScrapping(f"Error al inicializar el logging en {nombre_proceso}: {str(el)}") from el
@@ -116,7 +117,7 @@ class ScrappingBase:
             return BeautifulSoup(response.text, 'html.parser')
 
         except RequestException as re:
-            raise ExcepcionScrapping(f"Error al realizar la solicitud HTTP a {url}: {str(re)}") from re
+            raise ExcepcionScrapping(url=url, mensaje=f"Error al realizar la solicitud HTTP a {url}: {str(re)}") from re
 
         except Exception as e:
             raise ExcepcionScrapping(f"Error inesperado al obtener contenido de la página {url}: {str(e)}") from e

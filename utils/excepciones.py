@@ -1,5 +1,7 @@
 # utils/excepciones.py
 
+import traceback
+
 class ExcepcionBase(Exception):
 
     """
@@ -105,3 +107,38 @@ class ExcepcionLogging(ExcepcionBase):
     def __init__(self, mensaje="Error en la configuración de logging"):
         self.mensaje = mensaje
         super().__init__(self.mensaje)
+
+class ManejoExcepciones:
+    
+    @staticmethod
+    def formatear_trazas_excepciones(e: Exception) -> str:
+
+        """
+        Formatea las trazas de una excepción encadenada, colocando primero el mensaje de la excepción más interna.
+        
+        Parámetros:
+            e (Exception): La excepción principal.
+            
+        Salida:
+            str: La cadena formateada con las trazas de la excepción.
+        """
+
+        trazas = []
+
+        excepcion_actual = e
+        ultima_excepcion = excepcion_actual
+
+        while excepcion_actual:
+            tb = traceback.extract_tb(excepcion_actual.__traceback__)
+
+            if tb:
+                traza = tb[0]
+                trazas.append(f"File \"{traza.filename}\", line {traza.lineno}, in {traza.name}: {traza.line}")
+
+            ultima_excepcion = f"{type(excepcion_actual).__name__}: {str(excepcion_actual)}"
+            excepcion_actual = excepcion_actual.__cause__
+
+        trazas.append(f"Excepción: {str(ultima_excepcion)}")
+        trazas.reverse()
+
+        return "\n".join(trazas)

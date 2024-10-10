@@ -1,6 +1,7 @@
 # scripts/cron_actualizar_calendario.py
 
 from utils.logging_utils import inicializar_logging
+from utils.excepciones import ManejoExcepciones
 from scripts.subprocesos import scrapping_obtener_grupos_competiciones
 import os
 
@@ -20,14 +21,13 @@ def main():
         
         # Aquí continuaría la lógica para actualizar el calendario.
         # ...
-        
+
     except Exception as e:
-        logger.exception(e)
-    
+        trazas_error = ManejoExcepciones.formatear_trazas_excepciones(e)
+        logger.error(trazas_error)
+
     finally:
-        if conexion:
-            #conexion.close()
-            logger.info("Conexión a la base de datos cerrada.")
+        logger.info("Finalizado proceso de actualización del calendario de competiciones")
 
 
 if __name__ == "__main__":
