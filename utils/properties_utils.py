@@ -2,10 +2,10 @@
 
 import configparser
 import os
-from utils.excepciones import ExcepcionConfiguracion
+from utils.excepciones import ExcepcionProperties
 
-def leer_properties(ruta_properties):
-    
+def leer_properties(ruta_properties: str) -> configparser.ConfigParser:
+
     """
     Lee un archivo .properties y devuelve un objeto ConfigParser con las propiedades cargadas.
 
@@ -20,7 +20,7 @@ def leer_properties(ruta_properties):
     """
 
     if not os.path.exists(ruta_properties):
-        raise ExcepcionConfiguracion(f"El archivo de propiedades '{ruta_properties}' no existe o no se puede acceder.")
+        raise ExcepcionProperties(f"El archivo de propiedades '{ruta_properties}' no existe o no se puede acceder")
 
     try:
         config = configparser.ConfigParser()
@@ -28,10 +28,13 @@ def leer_properties(ruta_properties):
         return config
 
     except Exception as e:
-        raise ExcepcionConfiguracion(f"Error al leer el archivo de propiedades: {str(e)}") from e
+        raise ExcepcionProperties(f"Error al leer el archivo de propiedades: {ruta_properties}") from e
 
-def obtener_property(propiedades, seccion, clave, default=None):
 
+def obtener_property(propiedades: configparser.ConfigParser, 
+                     seccion: str, 
+                     clave: str, 
+                     default: str = None) -> str:
     """
     Obtiene el valor de una propiedad del archivo de configuración.
 
@@ -45,15 +48,15 @@ def obtener_property(propiedades, seccion, clave, default=None):
         str: Valor de la propiedad o el valor por defecto si no existe.
 
     Lanza:
-        ExcepcionConfiguracion: Si la sección o clave especificada no existe en el archivo de propiedades
-                                y no se proporciona un valor por defecto.
+        ExcepcionConfiguracion: Si la sección o clave especificada no existe en el archivo de propiedades y no se proporciona
+                                un valor por defecto.
     """
 
     try:
         return propiedades.get(seccion, clave, fallback=default)
-    
+
     except configparser.NoSectionError:
-        raise ExcepcionConfiguracion(f"La sección '{seccion}' no existe en el archivo de propiedades.")
-    
+        raise ExcepcionProperties(f"La sección '{seccion}' no existe en el archivo de propiedades.")
+
     except configparser.NoOptionError:
-        raise ExcepcionConfiguracion(f"La clave '{clave}' no existe en la sección '{seccion}'.")
+        raise ExcepcionProperties(f"La clave '{clave}' no existe en la sección '{seccion}'.")

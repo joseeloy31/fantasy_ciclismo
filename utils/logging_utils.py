@@ -2,7 +2,7 @@
 
 from logging.handlers import RotatingFileHandler
 from utils.properties_utils import leer_properties, obtener_property
-from utils.excepciones import ExcepcionConfiguracion, ExcepcionLogging
+from utils.excepciones import ExcepcionProperties, ExcepcionLogging
 import logging
 import os
 
@@ -15,7 +15,35 @@ CTE_NIVELES_LOGGING = {
     'CRITICAL': logging.CRITICAL
 }
 
-def _cargar_configuracion_logging(ruta_config, nombre_config):
+
+def inicializar_logging(ruta_config: str, nombre_config: str, proceso: str) -> logging.Logger:
+
+    """
+    Inicializa el sistema de logging con salidas tanto a archivo como a consola.
+
+    Parámetros:
+        ruta_config (str): Ruta del fichero de configuración del log.
+        nombre_config (str): Nombre del fichero de configuración del log.
+        proceso (str): Nombre del proceso que llama a la inicialización del log.
+
+    Salida:
+        logging.Logger: Objeto de logger configurado.
+    
+    Lanza:
+        ExcepcionLogging: Si ocurre algún error en la configuración de logging.
+    """
+    try:
+        directorio_logs, tamanyo_maximo_mb, archivos_rotativos, nivel_archivo, nivel_consola = _cargar_configuracion_logging(ruta_config, nombre_config)
+        ruta_log = _generar_ruta_log(directorio_logs, proceso)
+        logger = _configurar_logger(proceso, nivel_archivo, nivel_consola, ruta_log, tamanyo_maximo_mb, archivos_rotativos)
+
+        return logger
+
+    except Exception as e:
+        raise ExcepcionLogging(f"Error al inicializar el logging.") from e
+
+
+def _cargar_configuracion_logging(ruta_config: str, nombre_config: str) -> tuple:
 
     """
     Método privado para cargar la configuración de logging desde un archivo de properties.
@@ -43,45 +71,17 @@ def _cargar_configuracion_logging(ruta_config, nombre_config):
         return directorio_logs, tamanyo_maximo_mb, archivos_rotativos, nivel_archivo, nivel_consola
 
     except KeyError as ke:
-        raise ExcepcionLogging(f"Error al leer la clave '{ke.args[0]}' del archivo '{nombre_config}'") from ke
+        raise ExcepcionLogging(f"No se ha encontrado la clave '{ke.args[0]}' en el archivo '{nombre_config}'") from ke
 
-    except ExcepcionConfiguracion as ec:
-        raise ExcepcionLogging(f"Error en la configuración: {str(ec)}") from ec
+    except ExcepcionProperties as ec:
+        raise ExcepcionLogging(f"Error al cargar la configuración de logging") from ec
     
     except Exception as e:
-        raise ExcepcionLogging(f"Error al cargar la configuración de logging: {str(e)}") from e
+        raise ExcepcionLogging(f"Error al cargar la configuración de logging") from e
 
 
-def inicializar_logging(ruta_config, nombre_config, proceso):
+def _generar_ruta_log(directorio_logs: str, proceso: str) -> str:
 
-    """
-    Inicializa el sistema de logging con salidas tanto a archivo como a consola.
-
-    Parámetros:
-        ruta_config (str): Ruta del fichero de configuración del log.
-        nombre_config (str): Nombre del fichero de configuración del log.
-        proceso (str): Nombre del proceso que llama a la inicialización del log.
-
-    Salida:
-        logging.Logger: Objeto de logger configurado.
-    
-    Lanza:
-        ExcepcionLogging: Si ocurre algún error en la configuración de logging.
-    """
-
-    try:
-        directorio_logs, tamanyo_maximo_mb, archivos_rotativos, nivel_archivo, nivel_consola = _cargar_configuracion_logging(ruta_config, nombre_config)
-        ruta_log = _generar_ruta_log(directorio_logs, proceso)
-        logger = _configurar_logger(proceso, nivel_archivo, nivel_consola, ruta_log, tamanyo_maximo_mb, archivos_rotativos)
-
-        return logger
-
-    except Exception as e:
-        raise ExcepcionLogging(f"Error al configurar el logging: {str(e)}") from e
-
-
-def _generar_ruta_log(directorio_logs, proceso):
-    
     """
     Genera la ruta del archivo de log y crea el directorio si no existe.
 
@@ -103,11 +103,13 @@ def _generar_ruta_log(directorio_logs, proceso):
         return os.path.join(directorio_logs, nombre_archivo_log)
  
     except Exception as e:
-        raise ExcepcionLogging(f"Error al generar la ruta del log para el proceso '{proceso}': {str(e)}") from e
+        raise ExcepcionLogging(f"Error al generar la ruta del log para el proceso '{proceso}'") from e
 
 
-def _configurar_logger(proceso, nivel_archivo, nivel_consola, ruta_log, tamanyo_maximo_mb, archivos_rotativos):
- 
+def _configurar_logger(proceso: str, nivel_archivo: int, nivel_consola: int, 
+                       ruta_log: str, tamanyo_maximo_mb: int, 
+                       archivos_rotativos: int) -> logging.Logger:
+
     """
     Configura el logger con handlers para archivo y consola.
 
@@ -125,7 +127,7 @@ def _configurar_logger(proceso, nivel_archivo, nivel_consola, ruta_log, tamanyo_
     Lanza:
         ExcepcionLogging: Si ocurre un error al configurar el logger.
     """
- 
+
     try:
         formato_log = logging.Formatter('%(asctime)s.%(msecs)03d - %(levelname)s - %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
 
@@ -141,9 +143,11 @@ def _configurar_logger(proceso, nivel_archivo, nivel_consola, ruta_log, tamanyo_
         return logger
 
     except Exception as e:
-        raise ExcepcionLogging(f"Error al configurar el logger para el proceso '{proceso}': {str(e)}") from e
+        raise ExcepcionLogging(f"Error al configurar el logger para el proceso '{proceso}'") from e
 
-def _crear_handler_archivo(ruta_log, tamanyo_maximo_mb, archivos_rotativos, nivel_archivo, formato_log):
+
+def _crear_handler_archivo(ruta_log: str, tamanyo_maximo_mb: int, archivos_rotativos: int, 
+                            nivel_archivo: int, formato_log: logging.Formatter) -> logging.Handler:
 
     """
     Crea un handler para el logging en archivo.
@@ -170,10 +174,10 @@ def _crear_handler_archivo(ruta_log, tamanyo_maximo_mb, archivos_rotativos, nive
         return archivo_handler
 
     except Exception as e:
-        raise ExcepcionLogging(f"Error al crear el handler de archivo para '{ruta_log}': {str(e)}") from e
+        raise ExcepcionLogging(f"Error al crear el handler de archivo para '{ruta_log}'") from e
 
 
-def _crear_handler_consola(nivel_consola, formato_log):
+def _crear_handler_consola(nivel_consola: int, formato_log: logging.Formatter) -> logging.Handler:
 
     """
     Crea un handler para el logging en consola.
@@ -197,4 +201,4 @@ def _crear_handler_consola(nivel_consola, formato_log):
         return consola_handler
 
     except Exception as e:
-        raise ExcepcionLogging(f"Error al crear el handler de consola: {str(e)}") from e
+        raise ExcepcionLogging(f"Error al crear el handler de consola") from e

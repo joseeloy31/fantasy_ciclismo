@@ -5,11 +5,25 @@ from utils.excepciones import ManejoExcepciones
 from scripts.subprocesos import scrapping_obtener_grupos_competiciones
 import os
 
-# Constantes
+# Constantes para la configuración
 CTE_RUTA_CONFIG = "src/config/"
 CTE_NOMBRE_CONFIG_PROPERTIES = "config.properties"
 
 def main():
+
+    """
+    Función principal que se ejecuta al iniciar el script.
+    
+    Esta función configura el logging, obtiene los grupos de competiciones 
+    mediante un proceso de scrapping, y maneja cualquier excepción que 
+    pueda ocurrir durante la ejecución.
+
+    Parámetros:
+        None
+    
+    Salida:
+        None
+    """
 
     proceso = os.path.splitext(os.path.basename(__file__))[0]
     logger = inicializar_logging(CTE_RUTA_CONFIG, CTE_NOMBRE_CONFIG_PROPERTIES, proceso)

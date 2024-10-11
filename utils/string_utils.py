@@ -1,7 +1,7 @@
 # utils/string_utils.py
 
-def comparar_cadenas_ignorando_case(cadena1, cadena2):
-   
+def comparar_cadenas_ignorando_case(cadena1: str, cadena2: str) -> bool:
+
     """
     Compara dos cadenas de texto sin tener en cuenta las mayúsculas o minúsculas.
     
@@ -16,8 +16,8 @@ def comparar_cadenas_ignorando_case(cadena1, cadena2):
     return cadena1.strip().lower() == cadena2.strip().lower()
 
 
-def contiene_cualquier_subcadena(cadena, subcadenas):
-    
+def contiene_cualquier_subcadena(cadena: str, subcadenas: list) -> bool:
+
     """
     Verifica si una cadena contiene cualquiera de las subcadenas dadas.
     
@@ -39,23 +39,24 @@ def contiene_cualquier_subcadena(cadena, subcadenas):
     return False
 
 
-def obtener_nombre_properties_proceso(nombre_proceso, prefijo_proceso='cron', prefijo_properties='scrapping'):
+def obtener_nombre_properties_proceso(nombre_proceso: str,
+                                      prefijo_proceso: str = 'cron',
+                                      prefijo_properties: str = 'scrapping') -> str:
 
     """
     Convierte el prefijo del proceso en un nombre de archivo .properties.
     
-    Parámetros: 
-        'cron' se convierte en 'scrapping', y devuelve 'scrapping_actualizar_calendario.properties' 
-        para un proceso llamado 'actualizar_calendario'.
+    Ejemplo: 
+        'cron' se convierte en 'scrapping',
+        y devuelve 'scrapping_actualizar_calendario.properties'
+        para un proceso llamado 'cron_actualizar_calendario'.
+    
+    Parámetros:
+        nombre_proceso (str): El nombre del proceso (ej. 'actualizar_calendario').
+        prefijo_proceso (str, optional): El prefijo a buscar ysustituir (ej. 'cron').Default es 'cron'.
+        prefijo_properties (str, optional): El prefijo a utilizar en lugar del anterior (ej. 'scrapping'). Default es 'scrapping'.
     
     Salida:
-        nombre_proceso (str): El nombre del proceso (ej. 'actualizar_calendario').
-        prefijo_proceso (str, optional): El prefijo a buscar y sustituir (ej. 'cron'). 
-            Default es 'cron'.
-        prefijo_properties (str, optional): El prefijo a utilizar en lugar del anterior 
-            (ej. 'scrapping'). Default es 'scrapping'.
-    
-    Returns:
         str: El nombre de archivo para el log del scrapping.
     """
 
