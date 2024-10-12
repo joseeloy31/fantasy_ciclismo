@@ -49,7 +49,7 @@ class ObtenerGruposCompeticiones(ScrappingBase):
         try:
             self.logger.info("Iniciando la obtención de grupos de competiciones...")
             self._cargar_valores_configuracion()
-            soup = self.obtener_soup_pagina(self.url_velogames+"a")
+            soup = self.obtener_soup_pagina(self.url_velogames)
             h1_todas_competiciones = self._encontrar_encabezado_todas_competiciones(soup)
 
             if h1_todas_competiciones:

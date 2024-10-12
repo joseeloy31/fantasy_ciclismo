@@ -39,8 +39,7 @@ def main():
 
     except Exception as e:
         trazas_error = ManejoExcepciones.formatear_trazas_excepciones(e)
-        logger.exception(e)
-        #logger.error(trazas_error)
+        logger.error(trazas_error)
 
     finally:
         logger.info("Finalizado proceso de actualización del calendario de competiciones")
