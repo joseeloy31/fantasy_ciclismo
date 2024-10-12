@@ -76,7 +76,7 @@ class ScrappingBase:
             raise ExcepcionScrapping(f"Error al leer las claves del Scrapping del proceso {nombre_proceso}") from ep
 
         except Exception as e:
-            raise ExcepcionScrapping(f"Error inesperado leer las claves del Scrapping del proceso {nombre_proceso}") from e
+            raise ExcepcionScrapping(f"Error inesperado al leer las claves del Scrapping del proceso {nombre_proceso}") from e
 
 
     def obtener_valor_config(self, seccion: str, clave: str, valor_por_defecto: Optional[Any] = None) -> Any:

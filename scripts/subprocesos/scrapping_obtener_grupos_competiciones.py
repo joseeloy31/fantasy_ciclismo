@@ -47,21 +47,22 @@ class ObtenerGruposCompeticiones(ScrappingBase):
         """
 
         try:
-            self.logger.info("Iniciando la obtención de competiciones...")
+            self.logger.info("Iniciando la obtención de grupos de competiciones...")
             self._cargar_valores_configuracion()
-            soup = self.obtener_soup_pagina(self.url_velogames)
+            soup = self.obtener_soup_pagina(self.url_velogames+"a")
             h1_todas_competiciones = self._encontrar_encabezado_todas_competiciones(soup)
 
             if h1_todas_competiciones:
                 competiciones = self._extraer_grupos_competiciones(h1_todas_competiciones)
                 self.logger.info(f"Se encontraron {len(competiciones)} competiciones.")
                 return competiciones
+
             else:
                 self.logger.warning("No se encontró el encabezado de competiciones con 'All Contests'.")
                 return []
 
         except Exception as e:
-            raise ExcepcionScrapping(f"Error en el proceso de obtención de competiciones desde: {self.url_velogames}") from e
+            raise ExcepcionScrapping(f"Error en el proceso de obtención de grupos de competiciones") from e
 
 
     def _cargar_valores_configuracion(self) -> None:
@@ -86,9 +87,6 @@ class ObtenerGruposCompeticiones(ScrappingBase):
             self.texto_eliminar_competiciones = self.obtener_valor_config(nombre_subproceso, "texto_eliminar_competiciones")
             self.palabras_identificador_femenino = self.obtener_valor_config(nombre_subproceso, "palabras_identificador_femenino")
             self.clases_enlace_competiciones = self.obtener_valor_config(nombre_subproceso, "clases_enlace_competiciones")
-
-        except ExcepcionProperties as ep:
-            raise ExcepcionScrapping(f"Error al cargar los valores de configuración de '{nombre_subproceso}'") from ep
 
         except Exception as e:
             raise ExcepcionScrapping(f"Error al cargar los valores de configuración de '{nombre_subproceso}'") from e
@@ -156,13 +154,13 @@ class ObtenerGruposCompeticiones(ScrappingBase):
             raise ExcepcionScrapping(f"Error al extraer los grupos de competciones de {self.url_velogames}") from e
 
 
-    def _limpiar_nombre_competicion(self, nombre: str, texto_eliminar_competiciones: str) -> str:
+    def _limpiar_nombre_competicion(self, nombre_competicion: str, texto_eliminar_competiciones: str) -> str:
 
         """
         Elimina el texto inicial innecesario del nombre de la competición.
 
         Parámetros:
-            nombre (str): Nombre original de la competición.
+            nombre_competicion (str): Nombre original de la competición.
             texto_eliminar_competiciones (str): Texto que se debe eliminar al inicio.
 
         Salida:
@@ -170,14 +168,14 @@ class ObtenerGruposCompeticiones(ScrappingBase):
         """
 
         try:
-            if string_utils.comparar_cadenas_ignorando_case(nombre[:len(texto_eliminar_competiciones)],
+            if string_utils.comparar_cadenas_ignorando_case(nombre_competicion[:len(texto_eliminar_competiciones)],
                                                             texto_eliminar_competiciones):
-                return nombre[len(texto_eliminar_competiciones):].strip()
+                return nombre_competicion[len(texto_eliminar_competiciones):].strip()
 
-            return nombre.strip()
+            return nombre_competicion.strip()
 
         except Exception as e:
-            raise ExcepcionScrapping(f"Error al limpiar el nombre de una competición") from e
+            raise ExcepcionScrapping(f"Error al limpiar el nombre de la competición {nombre_competicion}") from e
 
     def _determinar_genero_competicion(self, nombre_competicion: str, palabras_identificador_femenino: List[str]) -> str:
 

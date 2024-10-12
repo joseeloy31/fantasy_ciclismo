@@ -27,6 +27,7 @@ def main():
 
     proceso = os.path.splitext(os.path.basename(__file__))[0]
     logger = inicializar_logging(CTE_RUTA_CONFIG, CTE_NOMBRE_CONFIG_PROPERTIES, proceso)
+    logger.info("Iniciado proceso de actualización del calendario de competiciones")
     conexion = None
 
     try:
@@ -38,7 +39,8 @@ def main():
 
     except Exception as e:
         trazas_error = ManejoExcepciones.formatear_trazas_excepciones(e)
-        logger.error(trazas_error)
+        logger.exception(e)
+        #logger.error(trazas_error)
 
     finally:
         logger.info("Finalizado proceso de actualización del calendario de competiciones")

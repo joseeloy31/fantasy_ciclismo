@@ -100,11 +100,15 @@ class ExcepcionLogging(ExcepcionBase):
         super().__init__(self.mensaje)
 
 
+import traceback
+
+import traceback
+
 class ManejoExcepciones:
 
     @staticmethod
     def formatear_trazas_excepciones(excepcion: Exception) -> str:
-    
+
         """
         Formatea la traza de una excepción mostrando la causa raíz y las trazas de la excepción encadenada.
 
@@ -115,49 +119,58 @@ class ManejoExcepciones:
             str: La cadena formateada con el mensaje detallado de la excepción.
         """
 
-        trazas = []
-        excepcion_actual = excepcion
-        trazas.append(f"Se produjo una excepción:\nExcepción: {str(excepcion_actual)}")
+        mensajes_excepciones, trazas_traceback, causa_mas_profunda_tipo, causa_mas_profunda_mensaje = ManejoExcepciones._recopilar_excepciones_y_trazas(excepcion)
         
-        causa_raiz = ManejoExcepciones._obtener_causa_mas_profunda(excepcion_actual)
-        if causa_raiz:
+        trazas = ["\nSe produjo una excepción:"]
+    
+        for mensaje in mensajes_excepciones[:-1]:
+            trazas.append(f"  >> {mensaje}")
+
+        if causa_mas_profunda_tipo and causa_mas_profunda_mensaje:
             trazas.append("\nCausa raíz:")
-            trazas.append(causa_raiz)
+            trazas.append(f"{causa_mas_profunda_tipo}: {causa_mas_profunda_mensaje}")
 
         trazas.append("\nTraceback (última llamada más reciente):")
+        trazas.extend(trazas_traceback)
+
+        return "\n".join(trazas)
+
+    @staticmethod
+    def _recopilar_excepciones_y_trazas(excepcion: Exception) -> tuple:
+
+        """
+        Recorre la cadena de excepciones y almacena los mensajes de error, las trazas del traceback,
+        y obtiene la causa más profunda.
+
+        Parámetros:
+            excepcion (Exception): La excepción principal.
+
+        Salida:
+            tuple: Cuatro elementos:
+                - Lista con los mensajes de las excepciones
+                - Lista con las trazas del traceback
+                - Tipo de la causa más profunda
+                - Mensaje de la causa más profunda
+        """
+
+        mensajes_excepciones = []
+        trazas_traceback = []
+        causa_mas_profunda_tipo = None
+        causa_mas_profunda_mensaje = None
+        excepcion_actual = excepcion
+
         while excepcion_actual:
+            tipo_excepcion = type(excepcion_actual).__name__
+            mensaje_excepcion = str(excepcion_actual)
+            mensajes_excepciones.append(mensaje_excepcion)
             tb = traceback.extract_tb(excepcion_actual.__traceback__)
 
             if tb:
                 traza = tb[0]
-                trazas.append(f'  File "{traza.filename}", line {traza.lineno}, in {traza.name}\n    {traza.line}')
-                
+                trazas_traceback.append(f'  File "{traza.filename}", line {traza.lineno}, in {traza.name}\n    {traza.line}')
+
+            causa_mas_profunda_tipo = tipo_excepcion
+            causa_mas_profunda_mensaje = mensaje_excepcion
             excepcion_actual = excepcion_actual.__cause__
 
-        return "\n".join(trazas)
-
-
-    @staticmethod
-    def _obtener_causa_mas_profunda(excepcion: Exception) -> str:
-
-        """
-        Recorre la cadena de causas encadenadas para obtener la excepción más profunda.
-
-        Parámetros:
-            excepcion (Exception): La excepción inicial.
-
-        Salida:
-            str: El mensaje formateado de la excepción más profunda.
-        """
-
-        excepcion_causa = excepcion.__cause__
-        causa_mas_profunda = None
-        
-        while excepcion_causa:
-            causa_mas_profunda = excepcion_causa
-            excepcion_causa = excepcion_causa.__cause__
-
-        if causa_mas_profunda:
-            return f"{type(causa_mas_profunda).__name__}: {str(causa_mas_profunda)}"
-        
-        return ""
+        return mensajes_excepciones, trazas_traceback, causa_mas_profunda_tipo, causa_mas_profunda_mensaje
