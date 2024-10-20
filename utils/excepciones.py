@@ -1,3 +1,5 @@
+# utils/excepciones.py
+
 import traceback
 
 class ExcepcionBase(Exception):
@@ -67,6 +69,22 @@ class ExcepcionConexionBaseDeDatos(ExcepcionBase):
         super().__init__(mensaje)
 
 
+class ExcepcionConfig(ExcepcionBase):
+
+    """
+    Excepción personalizada para errores de configuración.
+
+    Esta excepción se utiliza para indicar problemas relacionados
+    con la carga o el manejo de la configuración en la aplicación.
+
+    Atributos:
+        mensaje (str): Mensaje de error específico sobre la configuración.
+    """
+
+    def __init__(self, mensaje: str = "Error en el uso de la configuración") -> None:
+        super().__init__(mensaje)
+
+
 class ExcepcionProperties(ExcepcionBase):
 
     """
@@ -100,9 +118,23 @@ class ExcepcionLogging(ExcepcionBase):
         super().__init__(self.mensaje)
 
 
-import traceback
 
-import traceback
+class ExcepcionFecha(ExcepcionBase):
+
+    """
+    Excepción lanzada cuando ocurre un error en el tratamiento de una fecha.
+    
+    Parámetros:
+        mensaje (str): Mensaje descriptivo del error.
+
+    Salida:
+        None
+    """
+
+    def __init__(self, mensaje: str = "Error en el tratamiento de fechas") -> None:
+        self.mensaje = mensaje
+        super().__init__(self.mensaje)
+
 
 class ManejoExcepciones:
 

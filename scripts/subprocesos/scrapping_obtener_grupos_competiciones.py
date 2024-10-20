@@ -4,31 +4,30 @@ import os
 from typing import List, Dict, Optional
 from .scrapping_base import ScrappingBase
 from utils import string_utils
-from utils.excepciones import ExcepcionScrapping, ExcepcionProperties
+from utils.excepciones import ExcepcionScrapping
 
 class ObtenerGruposCompeticiones(ScrappingBase):
 
-    def __init__(self, ruta_config: str, logger, proceso: str) -> None:
+    def __init__(self) -> None:
 
         """
         Inicializa la clase de obtención de grupos de competiciones.
 
         Parámetros:
-            ruta_config (str): Ruta al archivo de configuración.
-            logger (logging): Gestor de log.
-            proceso (str): Nombre del proceso.
+            None
 
         Salida:
             None
 
         Lanza:
-            ExcepcionScrapping: Si ocurre algún error al inicializar la clase base de scrapping.
+            ExcepcionScrapping: Si ocurre algún error al inicializar la clase.
         """
+
         try:
-            super().__init__(ruta_config, logger, proceso)
+            super().__init__()
         
         except ExcepcionScrapping as es:
-            raise ExcepcionScrapping(f"Error al inicializar el proceso '{proceso}'") from es
+            raise ExcepcionScrapping(f"Error al inicializar el proceso obtención de grupos de competiciones") from es
 
 
     def ejecutar(self) -> List[Dict[str, str]]:
@@ -80,13 +79,12 @@ class ObtenerGruposCompeticiones(ScrappingBase):
         nombre_subproceso = os.path.splitext(os.path.basename(__file__))[0]
 
         try:
-            self.url_velogames = self.obtener_valor_config(nombre_subproceso, "url_velogames")
-            self.clase_h1_all_contests = self.obtener_valor_config(nombre_subproceso, "clase_h1_all_contests")
-            self.texto_all_contests = self.obtener_valor_config(nombre_subproceso, "texto_all_contests")
-            self.etiqueta_enlace_competiciones = self.obtener_valor_config(nombre_subproceso, "etiqueta_enlace_competiciones")
-            self.texto_eliminar_competiciones = self.obtener_valor_config(nombre_subproceso, "texto_eliminar_competiciones")
-            self.palabras_identificador_femenino = self.obtener_valor_config(nombre_subproceso, "palabras_identificador_femenino")
-            self.clases_enlace_competiciones = self.obtener_valor_config(nombre_subproceso, "clases_enlace_competiciones")
+            self.url_velogames = self.obtener_valor_config_proceso(nombre_subproceso, "url_velogames")
+            self.clase_h1_all_contests = self.obtener_valor_config_proceso(nombre_subproceso, "clase_h1_all_contests")
+            self.texto_all_contests = self.obtener_valor_config_proceso(nombre_subproceso, "texto_all_contests")
+            self.texto_eliminar_competiciones = self.obtener_valor_config_proceso(nombre_subproceso, "texto_eliminar_competiciones")
+            self.palabras_femenino = self.obtener_valor_config_proceso(nombre_subproceso, "palabras_femenino")
+            self.clases_enlace_competiciones = self.obtener_valor_config_proceso(nombre_subproceso, "clases_enlace_competiciones")
 
         except Exception as e:
             raise ExcepcionScrapping(f"Error al cargar los valores de configuración de '{nombre_subproceso}'") from e
@@ -136,11 +134,11 @@ class ObtenerGruposCompeticiones(ScrappingBase):
             self.logger.info("Extrayendo grupos de competiciones...")
             competiciones = []
 
-            for a in h1_todas_competiciones.find_all_next(self.etiqueta_enlace_competiciones,
-                                                          class_=self.clases_enlace_competiciones):
-                nombre_competicion = self._limpiar_nombre_competicion(a.text, self.texto_eliminar_competiciones)
+            for a in h1_todas_competiciones.find_all_next('a', class_=self.clases_enlace_competiciones):
+                nombre_competicion = self.limpiar_nombre_competicion(a.text, self.texto_eliminar_competiciones.split(','))
                 url_competicion = a['href']
-                genero_competicion = self._determinar_genero_competicion(nombre_competicion, self.palabras_identificador_femenino)
+                genero_competicion = self._determinar_genero_competicion(nombre_competicion,
+                                                                         self.palabras_femenino.split(","))
 
                 competiciones.append({'nombre': nombre_competicion,
                     'genero': genero_competicion,
@@ -153,29 +151,6 @@ class ObtenerGruposCompeticiones(ScrappingBase):
         except Exception as e:
             raise ExcepcionScrapping(f"Error al extraer los grupos de competciones de {self.url_velogames}") from e
 
-
-    def _limpiar_nombre_competicion(self, nombre_competicion: str, texto_eliminar_competiciones: str) -> str:
-
-        """
-        Elimina el texto inicial innecesario del nombre de la competición.
-
-        Parámetros:
-            nombre_competicion (str): Nombre original de la competición.
-            texto_eliminar_competiciones (str): Texto que se debe eliminar al inicio.
-
-        Salida:
-            str: Nombre limpio de la competición.
-        """
-
-        try:
-            if string_utils.comparar_cadenas_ignorando_case(nombre_competicion[:len(texto_eliminar_competiciones)],
-                                                            texto_eliminar_competiciones):
-                return nombre_competicion[len(texto_eliminar_competiciones):].strip()
-
-            return nombre_competicion.strip()
-
-        except Exception as e:
-            raise ExcepcionScrapping(f"Error al limpiar el nombre de la competición {nombre_competicion}") from e
 
     def _determinar_genero_competicion(self, nombre_competicion: str, palabras_identificador_femenino: List[str]) -> str:
 
@@ -191,8 +166,12 @@ class ObtenerGruposCompeticiones(ScrappingBase):
         """
 
         try:
+            self.logger.debug(f"nombre_competicion: {nombre_competicion}")
             if string_utils.contiene_cualquier_subcadena(nombre_competicion, palabras_identificador_femenino):
+                self.logger.debug(f"nombre_competicion FEMENINO")
                 return 'femenino'
+            
+            self.logger.debug("MASCULINO")
 
             return 'masculino'
 
